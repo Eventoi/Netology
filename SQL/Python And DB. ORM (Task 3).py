@@ -21,9 +21,31 @@ for record in data:
         'book': Book,
         'stock': Stock,
         'sale': Sale,
-    }.get(model_name)
+    }.get(model_name, None)
 
     if model_class is not None:
-        session.add(model_class(**record.get('fields')))
+        obj = model_class(**record.get('fields'))
+        session.add(obj)
+        session.commit()
+    else:
+        print(f"Класс не найден: {model_name}")
 
-session.commit()
+def get_shops(search_term):
+    query = session.query(
+        Book.title,
+        Shop.name,
+        Sale.price,
+        Sale.date_sale
+    ).select_from(Sale).join(Stock, Sale.id_stock == Stock.id).join(Book, Stock.id_book == Book.id).join(Publisher, Book.id_publisher == Publisher.id)
+
+    if search_term.isdigit():
+        query = query.filter(Publisher.id == search_term)
+    else:
+        query = query.filter(Publisher.name == search_term)
+
+    for book_title, shop_name, price, date_sale in query.all():
+        print(f"{book_title: <40} | {shop_name: <10} | {price: <8} | {date_sale.strftime('%d-%m-%Y')}")
+
+if __name__ == '__main__':
+    search_term = input("Введите название издателя или его ID: ")
+    get_shops(search_term)
