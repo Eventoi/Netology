@@ -36,7 +36,7 @@ def get_shops(search_term):
         Shop.name,
         Sale.price,
         Sale.date_sale
-    ).select_from(Sale).join(Stock, Sale.id_stock == Stock.id).join(Book, Stock.id_book == Book.id).join(Publisher, Book.id_publisher == Publisher.id)
+    ).select_from(Shop).join(Stock).join(Book).join(Publisher).join(Sale)
 
     if search_term.isdigit():
         query = query.filter(Publisher.id == search_term)
