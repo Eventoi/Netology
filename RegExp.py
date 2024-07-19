@@ -1,69 +1,71 @@
-import csv
 import re
-import os
+import csv
 
-def format_phone(phone):
-    # Форматируем телефон в формат +7(999)999-99-99
-    if 'доб' in phone:
-        phone_parts = phone.split()
-        phone = '+7(' + phone_parts[0] + ') ' + phone_parts[1] + '-' + phone_parts[2].replace('-', '') + ' доб.' + phone_parts[3]
-    else:
-        phone = '+7(' + phone[:3] + ') ' + phone[3:6] + '-' + phone[6:8] + '-' + phone[8:10]
-    return phone
-
-def process_contacts(contacts_list):
-    # Группируем записи по ФИО
-    contacts_dict = {}
-    for contact in contacts_list:
-        full_name = ' '.join(contact[:3])
-        if full_name not in contacts_dict:
-            contacts_dict[full_name] = []
-        contacts_dict[full_name].append(contact)
-
-    # Объединяем дублирующиеся записи о человеке в одну
-    processed_contacts = []
-    for full_name, contacts in contacts_dict.items():
-        if len(contacts) == 1:
-            processed_contacts.append(contacts[0])
-        else:
-            merged_contact = contacts[0]
-            for contact in contacts[1:]:
-                if len(merged_contact[4]) > 0 and len(contact[4]) > 0 and merged_contact[4] != contact[4]:
-                    raise ValueError("Duplicate contacts with different phone numbers")
-                if len(merged_contact[5]) > 0 and len(contact[5]) > 0 and merged_contact[5] != contact[5]:
-                    raise ValueError("Duplicate contacts with different email addresses")
-                merged_contact[4] = merged_contact[4] or contact[4]
-                merged_contact[5] = merged_contact[5] or contact[5]
-            processed_contacts.append(merged_contact)
-
-    # Форматируем телефоны и разбиваем ФИО на фамилию, имя и отчество
-    for contact in processed_contacts:
-        contact[4] = format_phone(contact[4])
-        name_parts = contact[0].split()
-        if len(name_parts) == 2:
-            contact[0], contact[1], contact[2] = name_parts[0], name_parts[1], ''
-        else:
-            contact[0], contact[1], contact[2] = name_parts[0], ' '.join(name_parts[1:-1]), name_parts[-1]
-
-    return processed_contacts
-
-# Получаем текущий рабочий каталог
-current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, "phonebook_raw.csv")
-
-# Читаем адресную книгу в формате CSV в список contacts_list
-with open(file_path, encoding="utf-8") as f:
+with open("phonebook_raw.csv", 'r', encoding='utf-8') as f:
     rows = csv.reader(f, delimiter=",")
     contacts_list = list(rows)
+    new_list = []
 
-# Выполняем пункты 1-3 ДЗ
-processed_contacts = process_contacts(contacts_list)
 
-# Сохраняем в текущий рабочий каталог
-current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, "phonebook.csv")
+def names_moving():
+    name_pattern = r'([А-Я])'
+    name_substitution = r' \1'
+    for column in contacts_list[1:]:
+        line = column[0] + column[1] + column[2]
+        if len((re.sub(name_pattern, name_substitution, line).split())) == 3:
+            column[0] = re.sub(name_pattern, name_substitution, line).split()[0]
+            column[1] = re.sub(name_pattern, name_substitution, line).split()[1]
+            column[2] = re.sub(name_pattern, name_substitution, line).split()[2]
+        elif len((re.sub(name_pattern, name_substitution, line).split())) == 2:
+            column[0] = re.sub(name_pattern, name_substitution, line).split()[0]
+            column[1] = re.sub(name_pattern, name_substitution, line).split()[1]
+            column[2] = ''
+        elif len((re.sub(name_pattern, name_substitution, line).split())) == 1:
+            column[0] = re.sub(name_pattern, name_substitution, line).split()[0]
+            column[1] = ''
+            column[2] = ''
+    return
 
-# Сохраняем получившиеся данные в другой файл
-with open("phonebook.csv", "w", encoding="utf-8") as f:
-    datawriter = csv.writer(f, delimiter=',')
-    datawriter.writerows(processed_contacts)
+
+def phone_number_formatting():
+    phone_pattern = re.compile(
+        r'(\+7|8)?\s*\(?(\d{3})\)?\s*\D?(\d{3})[-\s+]?(\d{2})-?(\d{2})((\s)?\(?(доб.)?\s?(\d+)\)?)?')
+    phone_substitution = r'+7(\2)\3-\4-\5\7\8\9'
+    for column in contacts_list:
+        column[5] = phone_pattern.sub(phone_substitution, column[5])
+    return
+
+
+def duplicates_combining():
+    for column in contacts_list[1:]:
+        first_name = column[0]
+        last_name = column[1]
+        for contact in contacts_list:
+            new_first_name = contact[0]
+            new_last_name = contact[1]
+            if first_name == new_first_name and last_name == new_last_name:
+                if column[2] == '':
+                    column[2] = contact[2]
+                if column[3] == '':
+                    column[3] = contact[3]
+                if column[4] == '':
+                    column[4] = contact[4]
+                if column[5] == '':
+                    column[5] = contact[5]
+                if column[6] == '':
+                    column[6] = contact[6]
+
+    for contact in contacts_list:
+        if contact not in new_list:
+            new_list.append(contact)
+    return new_list
+
+
+if __name__ == '__main__':
+    names_moving()
+    phone_number_formatting()
+    duplicates_combining()
+
+    with open("phonebook.csv", "w", encoding='utf-8') as f:
+        datawriter = csv.writer(f, delimiter=',')
+        datawriter.writerows(new_list)
