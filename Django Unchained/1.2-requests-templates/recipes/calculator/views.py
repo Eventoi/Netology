@@ -22,21 +22,33 @@ DATA = {
     # можете добавить свои рецепты ;)
 }
 
-class RecipeView(View):
-    def get(self, request, recipe_name):
-        servings = request.GET.get('servings', 1)
-        servings = int(servings)
+# class RecipeView(View):
+#     def get(self, request, recipe_name):
+#         servings = request.GET.get('servings', 1)
+#         servings = int(servings)
 
-        recipe = DATA.get(recipe_name)
-        if recipe is None:
-            return HttpResponse('Рецепт не найден', status=404)
+#         recipe = DATA.get(recipe_name)
+#         if recipe is None:
+#             return HttpResponse('Рецепт не найден', status=404)
 
-        context = {
-            'recipe': recipe
+#         context = {
+#             'recipe': recipe
+#         }
+
+#         if servings != 1:
+#             for ingredient, amount in recipe.items():
+#                 context['recipe'][ingredient] *= servings
+
+#         return HttpResponse(json.dumps(context, ensure_ascii=False), content_type='application/json')
+
+
+def prepare(request, recipe):
+    servings = request.GET.get('servings', 1)
+    context = {
+        'dish':recipe,
+        'servings':servings,
+        'recipe':{
+            k:v*int(servings) for k, v in DATA.get(recipe, {}).items()
         }
-
-        if servings != 1:
-            for ingredient, amount in recipe.items():
-                context['recipe'][ingredient] *= servings
-
-        return HttpResponse(json.dumps(context, ensure_ascii=False), content_type='application/json')
+    }
+    return render (request, 'calculator/index.html', context)
