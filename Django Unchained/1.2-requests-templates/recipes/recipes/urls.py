@@ -31,11 +31,5 @@ from calculator.views import prepare
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('', index),
-
-    # http://127.0.0.1:8000/omlet/?servings=4
     path('<str:recipe>/', prepare, name='recipes'),
-    
-    # http://127.0.0.1:8000/prepare/?recipe=omlet&servings=4
-    path('prepare/', prepare),
 ]
