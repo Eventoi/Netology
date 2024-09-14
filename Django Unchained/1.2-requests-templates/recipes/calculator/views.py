@@ -1,4 +1,7 @@
 from django.shortcuts import render
+from django.http import HttpResponse
+from django.views import View
+import json
 
 DATA = {
     'omlet': {
@@ -19,21 +22,21 @@ DATA = {
     # можете добавить свои рецепты ;)
 }
 
-def recipe_view(request, recipe_name):
-    servings = request.GET.get('servings', 1)
-    try:
+class RecipeView(View):
+    def get(self, request, recipe_name):
+        servings = request.GET.get('servings', 1)
         servings = int(servings)
-    except ValueError:
-        servings = 1
 
-    if recipe_name not in DATA:
-        return render(request, '404.html')
+        recipe = DATA.get(recipe_name)
+        if recipe is None:
+            return HttpResponse('Рецепт не найден', status=404)
 
-    recipe = DATA[recipe_name]
-    ingredients = {k: v * servings for k, v in recipe.items()}
+        context = {
+            'recipe': recipe
+        }
 
-    context = {
-        'recipe': ingredients
-    }
+        if servings != 1:
+            for ingredient, amount in recipe.items():
+                context['recipe'][ingredient] *= servings
 
-    return render(request, 'index.html', context)
+        return HttpResponse(json.dumps(context, ensure_ascii=False), content_type='application/json')
