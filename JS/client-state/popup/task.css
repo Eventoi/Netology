@@ -2,6 +2,7 @@ body {
   font-family: Helvetica;
   font-weight: 300;
 }
+
 .modal {
   display: none;
   justify-content: center;
@@ -49,6 +50,7 @@ body {
 .btn_danger {
   background: red;
 }
+
 .btn_success {
   background: green;
 }
