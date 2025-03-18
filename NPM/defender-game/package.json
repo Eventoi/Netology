@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
+	"build": "babel src -d dist"
+},
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/Eventoi/Netology.git"
@@ -18,5 +19,13 @@
   "bugs": {
     "url": "https://github.com/Eventoi/Netology/issues"
   },
-  "homepage": "https://github.com/Eventoi/Netology#readme"
+  "homepage": "https://github.com/Eventoi/Netology#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.26.4",
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9"
+  },
+  "dependencies": {
+    "core-js": "^3.41.0"
+  }
 }
