@@ -4,9 +4,10 @@
   "description": "\"Browser based game\"",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-	"build": "babel src -d dist"
-},
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src -d dist",
+	"lint": "eslint ."
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/Eventoi/Netology.git"
@@ -23,7 +24,8 @@
   "devDependencies": {
     "@babel/cli": "^7.26.4",
     "@babel/core": "^7.26.10",
-    "@babel/preset-env": "^7.26.9"
+    "@babel/preset-env": "^7.26.9",
+    "eslint": "^8.57.1"
   },
   "dependencies": {
     "core-js": "^3.41.0"
